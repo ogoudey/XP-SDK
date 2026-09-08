@@ -1,0 +1,21 @@
+[project]
+name = "xp"
+version = "0.1.0"
+description = "xp - authentication CLI"
+requires-python = ">=3.9"
+dependencies = [
+    "click>=8.1",
+    "requests>=2.31",
+    "keyring>=24.0",
+    "concepts @ git+https://github.com/ogoudey/Concepts.git",
+]
+
+[project.scripts]
+xp = "xp.cli:cli"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["xp*"]
