@@ -38,9 +38,10 @@ def new():
         prefilled={}
     else:
         click.echo("Logged in.")
-        prefilled = {"hub_client": token_data.get("user", {})}
+        prefilled = {"hub_client": list(token_data["user"].values())[0]}
+    print(f"Prefilled data: {prefilled}")
     new_xp = experience_system.Experience.create(prefilled=prefilled)
-    new_xp.save_to_file("new_experience.xp")
+    new_xp.save_to("new_experience.xp")
 
 @cli.command()
 def login():
