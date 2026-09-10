@@ -7,7 +7,6 @@ APP_NAME = "xp"
 # Base URL of the web service xp talks to.
 # Override with the XP_BASE_URL env var for local dev, e.g.:
 
-DEV_BASE_URL = "http://127.0.0.1:8081"
 DEFAULT_BASE_URL = "https://olimn.com"
 
 
