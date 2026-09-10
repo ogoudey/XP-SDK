@@ -29,11 +29,7 @@ def cli():
     """xp - authenticate and talk to the platform from your terminal."""
     pass
 
-
-@cli.command()
-def auto():
-    """Create experience file"""
-    click.echo("Retrospectively generating experience file...")
+"""
     token_data = auth.load_token()
     if not token_data:
         click.echo(f"Not logged in.")
@@ -52,6 +48,14 @@ def auto():
     rich.print(prefilled)
     new_xp = experience_system.Experience.create(prefilled=prefilled)
     new_xp.save_to("new_experience.xp")
+"""
+
+from concepts.experience import Experience
+
+
+@cli.command()
+def preregister():
+
 
 @cli.command()
 def login():
