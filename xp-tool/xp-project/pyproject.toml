@@ -8,6 +8,7 @@ dependencies = [
     "requests>=2.31",
     "keyring>=24.0",
     "concepts @ git+https://github.com/ogoudey/Concepts.git",
+    "rich>=13.0.0",
 ]
 
 [project.scripts]

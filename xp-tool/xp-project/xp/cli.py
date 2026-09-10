@@ -13,14 +13,15 @@ import webbrowser
 
 import click
 import requests
-
+import rich
 from . import auth
 from .config import get_base_url
 from .server import CallbackServer
 
 LOGIN_TIMEOUT_SECONDS = 300  # 5 minutes
 
-from concepts import experience_system
+from concepts import experience_system, trust_model, capability_model
+from concepts.trust_model import RootDevice, RootEgo, Computer, Cause, Action, Other, Ego, ComputeEnvironment, HumanBrain
 
 @click.group()
 @click.version_option(package_name="xp")
@@ -28,18 +29,27 @@ def cli():
     """xp - authenticate and talk to the platform from your terminal."""
     pass
 
+
 @cli.command()
-def new():
+def auto():
     """Create experience file"""
-    click.echo("Creating new experience file...")
+    click.echo("Retrospectively generating experience file...")
     token_data = auth.load_token()
     if not token_data:
-        click.echo("Not logged in.")
+        click.echo(f"Not logged in.")
         prefilled={}
     else:
-        click.echo("Logged in.")
-        prefilled = {"hub_client": list(token_data["user"].values())[0]}
-    print(f"Prefilled data: {prefilled}")
+        click.echo(f"Logged in as {token_data['user']['username']}.")
+        prefilled = {"hub_client": token_data["user"]["username"]}
+    prefilled["trust_model"] = {
+        "compute_environment": {
+            "name": None,   # a real Optional field -> fine as a literal value, no recursion needed
+            "code": {
+                "causal_mapping": { ... }  # see below, this one's different
+            },
+        },
+    }
+    rich.print(prefilled)
     new_xp = experience_system.Experience.create(prefilled=prefilled)
     new_xp.save_to("new_experience.xp")
 

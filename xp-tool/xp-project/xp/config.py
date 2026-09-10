@@ -12,7 +12,7 @@ DEFAULT_BASE_URL = "https://olimn.com"
 
 
 def get_base_url() -> str:
-    return os.environ.get("XP_BASE_URL", DEV_BASE_URL)
+    return os.environ.get("XP_BASE_URL", DEFAULT_BASE_URL)
 
 
 def get_config_dir() -> Path:
