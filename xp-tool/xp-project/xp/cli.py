@@ -17,10 +17,11 @@ import rich
 from . import auth
 from .config import get_base_url
 from .server import CallbackServer
+from concepts.experience import SharedExperience
 
 LOGIN_TIMEOUT_SECONDS = 300  # 5 minutes
 
-from conceptual import generate_user_experience
+from .conceptual import generate_user_experience
 
 @click.group()
 @click.version_option(package_name="xp")
@@ -28,39 +29,11 @@ def cli():
     """xp - authenticate and talk to the platform from your terminal."""
     pass
 
-<<<<<<< Updated upstream
-"""
-    token_data = auth.load_token()
-    if not token_data:
-        click.echo(f"Not logged in.")
-        prefilled={}
-    else:
-        click.echo(f"Logged in as {token_data['user']['username']}.")
-        prefilled = {"hub_client": token_data["user"]["username"]}
-    prefilled["trust_model"] = {
-        "compute_environment": {
-            "name": None,   # a real Optional field -> fine as a literal value, no recursion needed
-            "code": {
-                "causal_mapping": { ... }  # see below, this one's different
-            },
-        },
-    }
-    rich.print(prefilled)
-    new_xp = experience_system.Experience.create(prefilled=prefilled)
-    new_xp.save_to("new_experience.xp")
-"""
-
-@cli.command()
-@click.option('--preset', help='The configuration you want to preregister.')
-def register():
-=======
-from concepts.experience import Experience
 
 
 @cli.command()
 def get_configs():
-
->>>>>>> Stashed changes
+    pass
 
 
 @cli.command()

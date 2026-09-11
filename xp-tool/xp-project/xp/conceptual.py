@@ -8,8 +8,6 @@ from concepts.ego import HumanEgo
 from concepts.experience_dna import ExperienceDNA
 from concepts.experience_format import ExperienceFormat
 
-
-
 from concepts.experience import Experiencer, HumanBrain
 def generate_user_experiencer() -> Optional[Experiencer]:
     
@@ -40,7 +38,7 @@ def generate_user_experiencer() -> Optional[Experiencer]:
         
     return None
 from concepts.capability_model import RootIntegratedOutput, RootIntegratedInput
-from .capability_model import ActionMapping, Input, Action
+from concepts.capability_model import ActionMapping, Input, Action
 
 def generate_user_experience() -> SharedExperience:
     experiencer = generate_user_experience()
