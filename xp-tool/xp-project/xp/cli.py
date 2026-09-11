@@ -28,6 +28,7 @@ def cli():
     """xp - authenticate and talk to the platform from your terminal."""
     pass
 
+<<<<<<< Updated upstream
 """
     token_data = auth.load_token()
     if not token_data:
@@ -52,6 +53,14 @@ def cli():
 @cli.command()
 @click.option('--preset', help='The configuration you want to preregister.')
 def register():
+=======
+from concepts.experience import Experience
+
+
+@cli.command()
+def get_configs():
+
+>>>>>>> Stashed changes
 
 
 @cli.command()
