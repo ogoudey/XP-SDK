@@ -20,8 +20,7 @@ from .server import CallbackServer
 
 LOGIN_TIMEOUT_SECONDS = 300  # 5 minutes
 
-from concepts import experience_system, trust_model, capability_model
-from concepts.trust_model import RootDevice, RootEgo, Computer, Cause, Action, Other, Ego, ComputeEnvironment, HumanBrain
+from conceptual import generate_user_experience
 
 @click.group()
 @click.version_option(package_name="xp")
@@ -50,11 +49,9 @@ def cli():
     new_xp.save_to("new_experience.xp")
 """
 
-from concepts.experience import Experience
-
-
 @cli.command()
-def preregister():
+@click.option('--preset', help='The configuration you want to preregister.')
+def register():
 
 
 @cli.command()
