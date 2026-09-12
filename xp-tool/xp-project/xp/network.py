@@ -3,12 +3,12 @@ from pydantic import BaseModel
 
 from concepts.compute_environment import ComputeEnvironment
 from concepts.network_config import NetworkConfig
-
-from typing import List, Optional, 
+from . import auth
 import requests
+from concepts.computer import Computer
 
 GATEWAY_URL = "https://www.olimn.com"
-
+"""
 class NodeConfig(BaseModel):
     user: str
     ip_address: str
@@ -19,6 +19,9 @@ class NodeConfig(BaseModel):
 class NetworkConfig(BaseModel):
     compute_environment_id: str
     nodes: List[Tuple[str, Optional[NodeConfig]]] = []
+"""
+class NetworkCouldNotFind(Exception):
+    pass
 
 class ComputeEnvironment(BaseModel):
     compute_environment_id: str
@@ -37,7 +40,7 @@ def import_configs(capability_ids: List[str], compute_environment_id: str) -> Ne
     resp.raise_for_status()
     return NetworkConfig.model_validate(resp.json())
 
-def identify_compute_environment(compute_environment_id: str) -> Optional[ComputeEnvironment]:
+def identify_compute_environment_subnet(compute_environment_id: str) -> Optional[ComputeEnvironment]:
     resp = requests.get(
         f"{GATEWAY_URL}/compute_environment/{compute_environment_id}",
         headers=_auth_headers(),
@@ -45,7 +48,20 @@ def identify_compute_environment(compute_environment_id: str) -> Optional[Comput
     if resp.status_code == 404:
         return None
     resp.raise_for_status()
-    return ComputeEnvironment.model_validate(resp.json())
+    return resp.json()
+
+def post_compute_environment() -> None:
+    payload = {
+        "compute_environment_id": Computer.identify(),
+        "cidr": Computer.identify_network(),
+        "description": None,
+    }
+    resp = requests.post(
+        f"{GATEWAY_URL}/compute_environment",
+        json=payload,
+        headers=_auth_headers(),
+    )
+    resp.raise_for_status()
 
 def post_configs(config: NetworkConfig, compute_environment_id: str) -> None:
     resp = requests.post(
@@ -57,3 +73,8 @@ def post_configs(config: NetworkConfig, compute_environment_id: str) -> None:
         headers=_auth_headers(),
     )
     resp.raise_for_status()
+
+def _auth_headers() -> dict:
+    token_data = auth.load_token()
+    token = token_data["access_token"] if isinstance(token_data, dict) else token_data
+    return {"Authorization": f"Bearer {token}"}

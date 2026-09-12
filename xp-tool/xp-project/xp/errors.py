@@ -1,0 +1,3 @@
+
+class MainError(Exception):
+    pass

@@ -2,10 +2,12 @@ from concepts.ego import Ego
 from pathlib import Path
 from concepts.network_config import NetworkConfig, NodeConfig
 from concepts.compute_environment import ComputeEnvironment
-from typing import Optional, List
+from typing import Optional, List, Tuple
+from . import network
+from .errors import MainError
+from concepts.computer import Computer
 
 ego: Optional[Ego] = None
-compute_environment: Optional[ComputeEnvironment] = None
 network_config: Optional[NetworkConfig] = None
 
 
@@ -24,19 +26,26 @@ def self_realize(codebase_root: Path, capability_claims: List[str], features: Op
     )
     return capability_ids
 
-from concepts.computer import Computer
+
+def export_compute_environment():
+    network.post_compute_environment()
+
 def self_materialize() -> str:
-    _id = Computer.identify()
-    global compute_environment
-    compute_environment = network.identify_compute_environment(_id)
-    return _id
+    global subnet
+    subnet = network.identify_compute_environment_subnet(Computer.identify())
+    if subnet is None:
+        raise network.NetworkCouldNotFind("CE not identified by the network!")
+    else:
+        print(f"(CE {Computer.identify()} belongs to subnet {subnet}, identified by the network...)")
+    return subnet
     
 def import_configs() -> NetworkConfig:
     global network_config
-    network_config = network.import_configs(ego.capability_ids, compute_environment.get_id())
+    network_config = network.import_configs(ego.capability_ids, Computer.identify())
     return network_config
 
 def add_config(
+    node_key: str,
     user: str,
     ip_address: str,
     port: int,
@@ -46,18 +55,21 @@ def add_config(
     global network_config
     if network_config is None:
         network_config = NetworkConfig()
-    network_config.nodes.append(NodeConfig(
-        user=user,
-        ip_address=ip_address,
-        port=port,
-        password=password,
-        command=command
-    ))
+    network_config.nodes.append(
+        (node_key,
+        NodeConfig(
+            user=user,
+            ip_address=ip_address,
+            port=port,
+            password=password,
+            command=command)
+        )
+    )
 
 def export_configs():
     if network_config is None:
-        raise ValueError("Network configuration is not set. Use `xp.add_config`")
-    network.post_configs(network_config, compute_environment.get_id())
+        raise network.NetworkCouldNotFind("Network configuration is not set. Use `xp.add_config`")
+    network.post_configs(network_config, Computer.identify())
 
 def pin_experience():
     pass
