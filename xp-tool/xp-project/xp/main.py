@@ -14,7 +14,13 @@ network_config: Optional[NetworkConfig] = None
 def _get_capability_ids_from_claims(claims: List[str]) -> List[str]:
     return [capability for capability in claims] # optimistically granted
 
-def self_realize(codebase_root: Path, capability_claims: List[str], features: Optional[dict] = None) -> List[str]:
+def self_realize(codebase_root: Path | str, capability_claims: List[str], features: Optional[dict] = None) -> List[str]:
+    """
+    Realizes the codebase
+    """
+    
+    if type(codebase_root) is str:
+        codebase_root = Path(codebase_root)
     codebase=codebase_root.name
     capability_ids = _get_capability_ids_from_claims(capability_claims)
     experience_dna = features

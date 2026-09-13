@@ -30,10 +30,8 @@ def cli():
     pass
 
 
-
-@cli.command()
-def get_configs():
-    pass
+from . import cap
+cli.add_command(cap.cap)
 
 
 @cli.command()
@@ -116,6 +114,15 @@ def whoami():
     else:
         click.echo("Logged in (no user profile info stored).")
 
+@cli.command()
+def publish_capability():
+
+    token_data = auth.load_token()
+
+@cli.command()
+def read_capability():
+    
+    token_data = auth.load_token()
 
 if __name__ == "__main__":
     cli()
