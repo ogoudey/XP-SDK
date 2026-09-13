@@ -126,8 +126,7 @@ def show(quiet):
     if not rows:
         click.echo("No capabilities published yet. Try `xp cap publish`.")
         return
-
-    width = max(len(r["capability_id"]) for r in rows)
+    width = max(len(r) for r in rows)
     for row in rows:
         updated = format_when(row.get("updated_at"))
         source = row.get("source_name") or "—"
@@ -208,3 +207,37 @@ def publish(path, capability_id, yes):
         f"Published {result['capability_id']} "
         f"from {source.name} ({human_size(result['size_bytes'])})."
     )
+
+
+@cap.command("rm")
+@click.argument("capability_id")
+@click.option("--yes", "-y", is_flag=True, help="Skip the confirmation prompt.")
+@click.option("--backup", "-b", type=click.Path(dir_okay=False, writable=True),
+              help="Save the definition to a file before deleting it.")
+def rm(capability_id, yes, backup):
+    """Delete the definition for CAPABILITY_ID."""
+    if not SLUG_RE.match(capability_id):
+        raise click.ClickException(f"{capability_id!r} is not a valid capability id.")
+ 
+    # Fetch first: it confirms the thing exists, and makes --backup possible.
+    content = call("GET", f"/capabilities/{capability_id}").text
+ 
+    if backup:
+        pathlib.Path(backup).write_text(content, encoding="utf-8")
+        click.echo(f"Saved {backup} ({human_size(len(content.encode()))}).", err=True)
+ 
+    if not yes:
+        # Deliberately unlike `publish`, which just proceeds when it cannot
+        # prompt. Deleting is unrecoverable, so with no terminal to ask on,
+        # refuse rather than assume consent.
+        if not sys.stdin.isatty():
+            raise click.ClickException(
+                f"Refusing to delete {capability_id} without a terminal to "
+                "confirm on. Pass --yes if you meant it."
+            )
+        click.echo(f"{capability_id} is {human_size(len(content.encode()))} "
+                   f"and cannot be recovered after this.")
+        click.confirm(f"Delete {capability_id}?", abort=True)
+ 
+    call("DELETE", f"/capabilities/{capability_id}")
+    click.echo(f"Deleted {capability_id}.")
