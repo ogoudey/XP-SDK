@@ -114,15 +114,5 @@ def whoami():
     else:
         click.echo("Logged in (no user profile info stored).")
 
-@cli.command()
-def publish_capability():
-
-    token_data = auth.load_token()
-
-@cli.command()
-def read_capability():
-    
-    token_data = auth.load_token()
-
 if __name__ == "__main__":
     cli()

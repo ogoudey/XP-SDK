@@ -10,6 +10,7 @@ from concepts.computer import Computer
 ego: Optional[Ego] = None
 network_config: Optional[NetworkConfig] = None
 
+# ------------ Configging ------------ #
 
 def _get_capability_ids_from_claims(claims: List[str]) -> List[str]:
     return [capability for capability in claims] # optimistically granted
@@ -32,6 +33,23 @@ def self_realize(codebase_root: Path | str, capability_claims: List[str], featur
     )
     return capability_ids
 
+def list_capabilities(detail: bool = False) -> list:
+    return network.list_capabilities(detail)
+
+def describe_capability(capability_id: str) -> str:
+    return network.describe_capability(capability_id)
+
+def publish_capability(path: str, capability_id: str) -> dict:
+    return network.publish_capability(path, capability_id)
+
+def delete_capability(capability_id: str) -> None:
+    network.delete_capability(capability_id)
+
+def update_capability(capability_id: str, message: str):
+    return network.update_capability_status(capability_id, message)
+
+def see_capability(capability_id: str):
+    return network.see_capability_status(capability_id)
 
 def export_compute_environment():
     network.post_compute_environment()
@@ -76,6 +94,13 @@ def export_configs():
     if network_config is None:
         raise network.NetworkCouldNotFind("Network configuration is not set. Use `xp.add_config`")
     network.post_configs(network_config, Computer.identify())
+
+# --------------- end Configging ------------- #
+
+# ----------------- Capabilities --------------- #
+
+
+# --------------- end Capabilities ---------------- #
 
 def pin_experience():
     pass

@@ -1,2 +1,0 @@
-flask>=3.0
-concepts @ git+https://github.com/ogoudey/Concepts.git

@@ -1,6 +1,6 @@
 from typing import List, Optional, Tuple
 from pydantic import BaseModel
-
+import os
 from concepts.compute_environment import ComputeEnvironment
 from concepts.network_config import NetworkConfig
 from . import auth
@@ -73,6 +73,66 @@ def post_configs(config: NetworkConfig, compute_environment_id: str) -> None:
         headers=_auth_headers(),
     )
     resp.raise_for_status()
+
+# in network.py
+
+def list_capabilities(detail: bool = False) -> list:
+    params = {"detail": 1} if detail else None
+    resp = requests.get(
+        f"{GATEWAY_URL}/capabilities",
+        params=params,
+        headers=_auth_headers(),
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def describe_capability(capability_id: str) -> str:
+    resp = requests.get(
+        f"{GATEWAY_URL}/capabilities/{capability_id}",
+        headers=_auth_headers(),
+    )
+    resp.raise_for_status()
+    return resp.text
+
+
+def publish_capability(path: str, capability_id: str) -> dict:
+    with open(path, "rb") as handle:
+        resp = requests.post(
+            f"{GATEWAY_URL}/capabilities/{capability_id}/sync",
+            files={"file": (os.path.basename(path), handle, "text/markdown")},
+            headers=_auth_headers(),
+        )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def update_capability_status(capability_id: str, message: str) -> dict:
+    resp = requests.put(
+        f"{GATEWAY_URL}/capabilities/{capability_id}/status",
+        data=message,
+        headers={**_auth_headers(), "Content-Type": "application/json"},
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def see_capability_status(capability_id: str) -> dict:
+    resp = requests.get(
+        f"{GATEWAY_URL}/capabilities/{capability_id}/status",
+        headers=_auth_headers(),
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def delete_capability(capability_id: str) -> None:
+    resp = requests.delete(
+        f"{GATEWAY_URL}/capabilities/{capability_id}",
+        headers=_auth_headers(),
+    )
+    resp.raise_for_status()
+
 
 def _auth_headers() -> dict:
     token_data = auth.load_token()
