@@ -7,10 +7,11 @@ Commands:
     login    Log in via the browser
     logout   Clear stored credentials
     whoami   Show the currently logged-in user
+    write    hiuh
 """
 import sys
 import webbrowser
-
+from pathlib import Path
 import click
 import requests
 import rich
@@ -20,8 +21,6 @@ from .server import CallbackServer
 from concepts.experience import SharedExperience
 
 LOGIN_TIMEOUT_SECONDS = 300  # 5 minutes
-
-from .conceptual import generate_user_experience
 
 @click.group()
 @click.version_option(package_name="xp")
@@ -113,6 +112,41 @@ def whoami():
         click.echo(user.get("email") or user.get("username") or user)
     else:
         click.echo("Logged in (no user profile info stored).")
+
+from . import writer
+
+TEMPLATES = {
+    
+}
+
+@cli.command()
+@click.option("--local-dir", required=True, type=click.Path(file_okay=False, path_type=Path),
+              help="Directory to write the dataset entry into.")
+@click.option("--dataset-type", required=True, type=click.Choice(["raw", "lerobot"]),
+              help="Which kind of dataset entry to author.")
+def write(local_dir: Path, dataset_type: str):
+    """Run the wizard to author a new dataset entry."""
+    
+    click.echo(f"Building a '{dataset_type}' entry...")
+    instance = writer.template_experience
+
+    out_path = _write_output(instance, local_dir, dataset_type)
+    click.echo(f"Wrote {out_path}")
+
+def _write_output(model_instance, local_dir: Path, dataset_type: str) -> Path:
+    local_dir.mkdir(parents=True, exist_ok=True)
+    match dataset_type:
+        case "raw":
+            out_path = local_dir / f"experience.json"
+            out_path.write_text(model_instance.model_dump_json(indent=2))
+            return out_path
+        case "lerobot":
+            out_path = local_dir / f"experience.json"
+            out_path.write_text(model_instance.model_dump_json(indent=2))
+            return out_path
+        case _:
+            click.error(f"Dataset type {dataset_type} not recognized...")
+            raise
 
 if __name__ == "__main__":
     cli()
