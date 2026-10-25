@@ -133,6 +133,85 @@ def delete_capability(capability_id: str) -> None:
     )
     resp.raise_for_status()
 
+from urllib.parse import quote
+
+_UNSET = object()   # "not given", so splash_url=None can mean "clear it"
+
+
+class SpawnableError(Exception):
+    """The gateway refused. .code is machine-readable ('forbidden', 'not_found',
+    'slug_taken', 'bad_slug', ...), str() is a sentence, .status the HTTP code."""
+    def __init__(self, code, message, status):
+        super().__init__(message)
+        self.code = code
+        self.status = status
+
+
+def _spawnable_result(resp) -> dict:
+    """Return the JSON on success; raise SpawnableError (with the server's own
+    reason) otherwise. raise_for_status() would throw the reason away."""
+    if resp.ok:
+        return resp.json()
+    try:
+        body = resp.json()
+    except ValueError:
+        body = {}
+    raise SpawnableError(
+        body.get("error", "error"),
+        body.get("message") or body.get("error") or f"HTTP {resp.status_code}",
+        resp.status_code,
+    )
+
+
+def create_spawnable(type: str, slug: str, name: str, quality: str,
+                     visibility: str | None = None,
+                     splash_url: str | None = None) -> dict:
+    """type: 'bot' | 'environment'. quality: 'real' | 'sim'.
+    visibility defaults to 'private' on the server. You become the owner."""
+    body = {"type": type, "slug": slug, "name": name, "quality": quality}
+    if visibility is not None:
+        body["visibility"] = visibility
+    if splash_url is not None:
+        body["splash_url"] = splash_url
+    resp = requests.post(f"{GATEWAY_URL}/spawnables", json=body,
+                         headers=_auth_headers(), timeout=10)
+    return _spawnable_result(resp)
+
+
+def update_spawnable(slug: str, *, name=_UNSET, quality=_UNSET,
+                     visibility=_UNSET, splash_url=_UNSET) -> dict:
+    """Change only what you pass. splash_url=None clears the splash.
+    slug and type can't be changed."""
+    fields = {"name": name, "quality": quality,
+              "visibility": visibility, "splash_url": splash_url}
+    body = {k: v for k, v in fields.items() if v is not _UNSET}
+    resp = requests.patch(f"{GATEWAY_URL}/spawnables/{quote(slug, safe='')}",
+                          json=body, headers=_auth_headers(), timeout=10)
+    return _spawnable_result(resp)
+
+
+def delete_spawnable(slug: str) -> dict:
+    resp = requests.delete(f"{GATEWAY_URL}/spawnables/{quote(slug, safe='')}",
+                           headers=_auth_headers(), timeout=10)
+    return _spawnable_result(resp)
+
+
+def add_relation(slug: str, relation: str, target_slug: str) -> dict:
+    """'<slug> <relation> <target_slug>': relation is 'in' or 'maintains'.
+    You must own both. Returns the subject's card."""
+    resp = requests.post(
+        f"{GATEWAY_URL}/spawnables/{quote(slug, safe='')}/relations",
+        json={"relation": relation, "target": target_slug},
+        headers=_auth_headers(), timeout=10)
+    return _spawnable_result(resp)
+
+
+def remove_relation(slug: str, relation: str, target_slug: str) -> dict:
+    resp = requests.delete(
+        f"{GATEWAY_URL}/spawnables/{quote(slug, safe='')}"
+        f"/relations/{quote(relation, safe='')}/{quote(target_slug, safe='')}",
+        headers=_auth_headers(), timeout=10)
+    return _spawnable_result(resp)
 
 def _auth_headers() -> dict:
     token_data = auth.load_token()

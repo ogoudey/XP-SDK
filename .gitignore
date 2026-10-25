@@ -23,3 +23,5 @@ env/
 .env
 *.local
 
+*.egg-info/
+

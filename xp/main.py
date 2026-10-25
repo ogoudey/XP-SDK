@@ -97,13 +97,38 @@ def export_configs():
 
 # --------------- end Configging ------------- #
 
-# ----------------- Capabilities --------------- #
-
-
-# --------------- end Capabilities ---------------- #
-
 def pin_experience():
     pass
 
 def locate_experience():
     pass
+
+# -------- spawnables SDK ---------- #
+
+# Environments
+def create_environment(slug, name, quality, **kw):
+    return network.create_spawnable("environment", slug, name, quality, **kw)
+
+def update_environment(slug, **fields):
+    return network.update_spawnable(slug, **fields)
+
+# Bots
+def create_bot(slug, name, quality, **kw):
+    return network.create_spawnable("bot", slug, name, quality, **kw)
+
+def update_bot(slug, **fields):
+    return network.update_spawnable(slug, **fields)
+
+# Either
+def delete_spawnable(slug):
+    return network.delete_spawnable(slug)
+
+# Links (read as sentences)
+def put_bot_in_environment(bot_slug, environment_slug):
+    return network.add_relation(bot_slug, "in", environment_slug)
+
+def set_maintainer(maintainer_bot_slug, target_slug):
+    return network.add_relation(maintainer_bot_slug, "maintains", target_slug)
+
+def remove_link(slug, relation, target_slug):
+    return network.remove_relation(slug, relation, target_slug)
